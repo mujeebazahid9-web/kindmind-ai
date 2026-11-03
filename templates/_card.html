@@ -1,0 +1,14 @@
+<article class="card">
+  <div class="card-top">
+    <span class="chip">{{ p.tag }}</span>
+    <span class="chip chip-demo">Sample project</span>
+  </div>
+  <h3><a href="/causes/{{ p.slug }}">{{ p.title }}</a></h3>
+  <p class="muted small">{{ p.location }}</p>
+  <p>{{ p.summary }}</p>
+  <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="{{ p.goal }}" aria-valuenow="{{ p.amount_raised }}" aria-label="Funding progress">
+    <div class="progress-bar" style="width: {{ (p.amount_raised / p.goal * 100) | round(0) | int }}%"></div>
+  </div>
+  <p class="progress-text"><strong>${{ p.amount_raised }}</strong> raised of <strong>${{ p.goal }}</strong> goal</p>
+  <a class="btn btn-outline" href="/causes/{{ p.slug }}">View details</a>
+</article>
