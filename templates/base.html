@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}KindMind AI{% endblock %} | KindMind AI</title>
+  <meta name="description" content="KindMind AI helps people discover educational causes and understand how they can support children's learning. Demo project built for the PayPal AI Hackathon 2026.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+  <div class="demo-banner" role="note">
+    Demo project for the PayPal AI Hackathon 2026. All projects shown are sample content, and no real donations are collected.
+  </div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="brand" aria-label="KindMind AI home">
+        <svg class="logo" viewBox="0 0 48 48" width="38" height="38" aria-hidden="true">
+          <circle cx="24" cy="24" r="22" fill="#0F766E"/>
+          <path d="M24 35 C12 27 11 18 17 15.5 C20.5 14 23 16 24 18 C25 16 27.5 14 31 15.5 C37 18 36 27 24 35 Z" fill="#FFF8F0"/>
+          <circle cx="24" cy="11" r="3" fill="#F59E0B"/>
+        </svg>
+        <span class="brand-name">KindMind <span>AI</span></span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="/">Home</a>
+        <a href="/causes">Causes</a>
+        <a href="/assistant">AI Assistant</a>
+        <a href="/#how-it-works">How it works</a>
+        <a href="/#transparency">Transparency</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="footer-tagline">Where technology meets kindness, and kindness creates opportunities.</p>
+      <p class="footer-note">
+        KindMind AI is a hackathon demonstration. Sample projects are not real or verified initiatives.
+        The AI assistant provides information only and does not independently verify any organization.
+        Mujeeba Foundation for Learning and Development is a vision still in development and is not yet a registered organization.
+      </p>
+      <p class="footer-note">Open source under the MIT License.</p>
+    </div>
+  </footer>
+</body>
+</html>
