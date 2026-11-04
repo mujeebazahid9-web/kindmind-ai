@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Let Kindness Open Doors to Education{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <p class="eyebrow">Education for every child</p>
+      <h1>Every child deserves an opportunity to learn, wherever they are born.</h1>
+      <p class="lead">
+        KindMind AI helps people who want to help discover educational causes, understand what each one needs,
+        and ask questions in plain language before they decide how to support them.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/causes">Explore causes</a>
+        <a class="btn btn-outline" href="/assistant">Ask the AI assistant</a>
+      </div>
+      <p class="small muted">Tagline: Let Kindness Open Doors to Education.</p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 360 320" width="100%" role="img">
+        <rect x="10" y="20" width="340" height="280" rx="28" fill="#FDE7C4"/>
+        <circle cx="270" cy="85" r="34" fill="#F59E0B"/>
+        <path d="M40 260 L120 160 L190 235 L240 185 L330 260 Z" fill="#0F766E" opacity=".85"/>
+        <rect x="95" y="200" width="150" height="14" rx="4" fill="#134E4A"/>
+        <path d="M120 200 V150 Q170 130 170 150 V200 Z" fill="#FFF8F0"/>
+        <path d="M220 200 V150 Q170 130 170 150 V200 Z" fill="#FFFFFF"/>
+        <path d="M170 112 C140 92 138 70 154 64 C163 60 169 66 170 71 C171 66 177 60 186 64 C202 70 200 92 170 112 Z" fill="#E11D48"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow">
+    <h2>Our mission</h2>
+    <p>
+      Many children in rural and underserved communities have the curiosity and ability to learn but little access
+      to books, technology or guidance. At the same time, many people want to help but do not know which causes
+      need support or how to find them. KindMind AI is an attempt to close that gap with clear information,
+      honest funding goals and an AI assistant that explains things simply.
+    </p>
+    <p class="small muted">
+      KindMind AI is inspired by the vision of Mujeeba Foundation for Learning and Development, an organization
+      that is still being developed and is not yet registered.
+    </p>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <h2>Sample educational causes</h2>
+    <p class="muted">These are demo projects created for the hackathon. They are not real initiatives and have not received any donations.</p>
+    <div class="grid">
+      {% for p in projects %}{% include "_card.html" %}{% endfor %}
+    </div>
+    <p class="center"><a class="btn btn-primary" href="/causes">See all causes</a></p>
+  </div>
+</section>
+
+<section class="section" id="how-it-works">
+  <div class="container">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li><strong>Discover.</strong> Browse educational causes and read what each one needs and how funds are intended to be used.</li>
+      <li><strong>Ask.</strong> Use the AI assistant to ask questions in your own words. It answers only from the project information on the site.</li>
+      <li><strong>Support.</strong> Choose an amount and complete a PayPal Sandbox test payment to see how giving would work.</li>
+    </ol>
+    <p class="small muted">Status of this demo: the pages are live. The AI assistant and the PayPal Sandbox checkout are being connected and will be marked as working only after they are tested.</p>
+  </div>
+</section>
+
+<section class="section section-alt" id="transparency">
+  <div class="container">
+    <h2>Transparency and responsible giving</h2>
+    <div class="grid grid-2">
+      <div class="panel"><h3>Clearly labelled demo data</h3><p>Every project here is sample content. No beneficiaries, statistics or success stories are claimed.</p></div>
+      <div class="panel"><h3>Test payments only</h3><p>Payments run through the PayPal Sandbox. They are simulations, and no real money is collected.</p></div>
+      <div class="panel"><h3>AI gives information, not verification</h3><p>The assistant explains project information. It does not verify organizations and can make mistakes.</p></div>
+      <div class="panel"><h3>Honest about what is unknown</h3><p>If information is not available, the assistant is designed to say so instead of guessing.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="container center">
+    <h2>Every child has a dream. Help someone take the first step.</h2>
+    <a class="btn btn-light" href="/causes">Explore causes</a>
+  </div>
+</section>
+
+{% endblock %}
