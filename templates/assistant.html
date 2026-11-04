@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}AI Assistant{% endblock %}
+{% block content %}
+<style>
+  .chat { background: var(--white); border-radius: var(--radius); padding: 18px; box-shadow: 0 2px 10px rgba(19, 78, 74, .08); }
+  .chat-log { min-height: 220px; max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 4px; }
+  .msg { padding: 10px 14px; border-radius: 14px; max-width: 88%; white-space: pre-wrap; }
+  .msg-user { align-self: flex-end; background: var(--teal); color: #fff; }
+  .msg-assistant { align-self: flex-start; background: #FFF1DC; }
+  .msg-error { align-self: flex-start; background: #FEE2E2; color: #7F1D1D; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .chips button { border: 1px solid var(--teal); background: #fff; color: var(--teal-dark); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-family: inherit; font-size: .9rem; }
+  .chat-form { display: flex; gap: 8px; }
+  .chat-form input { flex: 1; padding: 12px 14px; border: 2px solid #E5E7EB; border-radius: 999px; font-size: 1rem; font-family: inherit; }
+  .proposal { border: 2px dashed var(--amber); border-radius: var(--radius); padding: 14px; margin-top: 12px; background: #FFFBEB; }
+  .proposal h3 { margin-top: 0; }
+</style>
+
+<section class="section">
+  <div class="container narrow">
+    <h1 class="page-title">AI assistant</h1>
+    <p class="muted">
+      Ask about the sample projects, how donating works, or ask for a recommendation. The assistant answers only from the
+      project information on this site and can make mistakes. It does not verify any organization. All projects are samples.
+    </p>
+    <div class="chat">
+      <div class="chat-log" id="log" aria-live="polite">
+        <div class="msg msg-assistant">Hello! I can explain the sample projects and help you pick one. What would you like to know?</div>
+      </div>
+      <div id="proposal"></div>
+      <div class="chips">
+        <button type="button" class="starter">What is KindMind AI?</button>
+        <button type="button" class="starter">Which project has the biggest funding goal?</button>
+        <button type="button" class="starter">How does donating work?</button>
+        <button type="button" class="starter">Recommend a project for a $20 donation</button>
+      </div>
+      <form id="form" class="chat-form">
+        <label for="input" style="position:absolute; left:-9999px;">Your message</label>
+        <input id="input" type="text" maxlength="1000" autocomplete="off" placeholder="Type your question here">
+        <button class="btn btn-primary" id="send" type="submit">Send</button>
+      </form>
+      <p class="small muted" id="status"></p>
+    </div>
+    <p class="small muted">Status: the payment step is not connected yet, so a proposal here does not charge anything.</p>
+  </div>
+</section>
+
+<script>
+(function () {
+  var log = document.getElementById("log");
+  var form = document.getElementById("form");
+  var input = document.getElementById("input");
+  var send = document.getElementById("send");
+  var statusEl = document.getElementById("status");
+  var proposalBox = document.getElementById("proposal");
+  var history = [];
+  var busy = false;
+
+  function addMessage(role, text) {
+    var div = document.createElement("div");
+    div.className = "msg msg-" + role;
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function showProposal(p) {
+    proposalBox.textContent = "";
+    if (!p) { return; }
+    var box = document.createElement("div");
+    box.className = "proposal";
+    var h = document.createElement("h3");
+    h.textContent = "Sample donation proposal";
+    var line = document.createElement("p");
+    var strong = document.createElement("strong");
+    strong.textContent = p.project_title + ": $" + p.amount_usd + " (USD)";
+    line.appendChild(strong);
+    var why = document.createElement("p");
+    why.textContent = p.reason;
+    var btn = document.createElement("button");
+    btn.className = "btn btn-primary btn-disabled";
+    btn.disabled = true;
+    btn.textContent = "Approve and pay (sandbox): not connected yet";
+    var note = document.createElement("p");
+    note.className = "small muted";
+    note.textContent = "No payment has been made. This is a sample proposal for a sample project.";
+    box.appendChild(h); box.appendChild(line); box.appendChild(why); box.appendChild(btn); box.appendChild(note);
+    proposalBox.appendChild(box);
+  }
+
+  function ask(text) {
+    text = (text || "").trim();
+    if (busy || !text) { return; }
+    busy = true;
+    send.disabled = true;
+    statusEl.textContent = "Thinking...";
+    addMessage("user", text);
+    history.push({ role: "user", content: text });
+    fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: history })
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+      .then(function (res) {
+        if (!res.ok) {
+          addMessage("error", res.data.error || "Something went wrong. Please try again.");
+          history.pop();
+          return;
+        }
+        addMessage("assistant", res.data.reply);
+        history.push({ role: "assistant", content: res.data.reply });
+        showProposal(res.data.proposal);
+      })
+      .catch(function () {
+        addMessage("error", "Could not reach the server. Please try again.");
+        history.pop();
+      })
+      .then(function () {
+        busy = false;
+        send.disabled = false;
+        statusEl.textContent = "";
+        input.focus();
+      });
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var value = input.value;
+    input.value = "";
+    ask(value);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".starter"), function (b) {
+    b.addEventListener("click", function () { ask(b.textContent); });
+  });
+})();
+</script>
+{% endblock %}
