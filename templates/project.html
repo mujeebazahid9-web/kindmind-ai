@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ project.title }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container detail">
+    <p><a href="/causes">&larr; Back to causes</a></p>
+    <div class="card-top">
+      <span class="chip">{{ project.tag }}</span>
+      <span class="chip chip-demo">Sample project, not a real initiative</span>
+    </div>
+    <h1 class="page-title">{{ project.title }}</h1>
+    <p class="muted">{{ project.location }}</p>
+
+    <div class="detail-grid">
+      <div>
+        <h2>Purpose</h2>
+        <p>{{ project.purpose }}</p>
+
+        <h2>The educational problem</h2>
+        <p>{{ project.problem }}</p>
+
+        <h2>Resources required</h2>
+        <table class="table">
+          <thead><tr><th>Item</th><th class="num">Planned cost (USD)</th></tr></thead>
+          <tbody>
+            {% for n in project.needs %}
+            <tr><td>{{ n.item }}</td><td class="num">${{ n.cost }}</td></tr>
+            {% endfor %}
+            <tr class="total"><td>Total (funding goal)</td><td class="num">${{ project.goal }}</td></tr>
+          </tbody>
+        </table>
+
+        <h2>How contributions are intended to be used</h2>
+        <p>{{ project.usage }}</p>
+
+        <h2>Project updates</h2>
+        <p>No updates yet. This is a sample project, so there is nothing to report.</p>
+      </div>
+
+      <aside class="panel sticky">
+        <h3>Funding progress</h3>
+        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="{{ project.goal }}" aria-valuenow="{{ project.amount_raised }}" aria-label="Funding progress">
+          <div class="progress-bar" style="width: {{ (project.amount_raised / project.goal * 100) | round(0) | int }}%"></div>
+        </div>
+        <p class="progress-text"><strong>${{ project.amount_raised }}</strong> raised of <strong>${{ project.goal }}</strong></p>
+        <p class="small muted">No donations have been recorded for this sample project.</p>
+        <button class="btn btn-primary btn-disabled" disabled>PayPal Sandbox donation: coming soon</button>
+        <p class="small muted">The PayPal Sandbox checkout is not connected yet. When it is, payments will be test payments only.</p>
+        <a class="btn btn-outline" href="/assistant">Ask the AI assistant</a>
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}
