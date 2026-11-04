@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Educational Causes{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="page-title">Educational causes</h1>
+    <p class="muted">All projects below are <strong>sample demo projects</strong> made for the hackathon. They are not real initiatives, and the amounts raised are zero because no donations exist.</p>
+    <div class="grid">
+      {% for p in projects %}{% include "_card.html" %}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
