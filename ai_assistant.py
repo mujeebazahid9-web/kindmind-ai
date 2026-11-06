@@ -2,12 +2,13 @@
 
 The model has one tool, propose_donation. Whatever it returns is re-checked on
 the server before it is shown to the visitor. Nothing in this file starts a
-payment.
+payment: the visitor must approve the proposal on the page first.
 """
 import os
 import time
 from collections import defaultdict, deque
 
+import payments
 from projects_data import PROJECTS, get_project
 
 MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-5-5")
@@ -16,8 +17,11 @@ MAX_MESSAGE_CHARS = 1000
 MIN_DONATION = 1
 MAX_DONATION = 100
 
-# The payment step is added in a later stage. The assistant is told the truth.
-PAYMENT_CONNECTED = False
+
+def payment_connected():
+    """True only when Braintree sandbox keys are set. The assistant is told the truth."""
+    return payments.configured()
+
 
 IP_LIMIT, IP_WINDOW = 20, 600          # 20 requests per 10 minutes per visitor
 GLOBAL_LIMIT, GLOBAL_WINDOW = 200, 3600  # 200 requests per hour for the whole site
@@ -66,7 +70,7 @@ def project_facts():
 
 
 def build_system_prompt():
-    if PAYMENT_CONNECTED:
+    if payment_connected():
         payment_line = (
             "Donating works like this: you prepare a proposal, the visitor approves it, and then a "
             "Braintree (a PayPal service) sandbox TEST payment runs. No real money moves."
@@ -209,4 +213,9 @@ def respond(raw_history, client=None):
             if proposal
             else "Sorry, I couldn't prepare an answer. Please try asking again."
         )
-    return {"reply": reply, "proposal": proposal}
+    if proposal and payment_connected():
+        # Signed so the payment step can only charge exactly what the server validated.
+        proposal["token"] = payments.make_proposal_token(
+            proposal["project_slug"], proposal["amount_usd"]
+        )
+    return {"reply": reply, "proposal": proposal, "payment_enabled": payment_connected()}
