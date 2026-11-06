@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Sandbox payment confirmation{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container narrow">
+    <h1 class="page-title">Sandbox test payment received</h1>
+    <p class="muted"><strong>This was a test payment.</strong> No real money moved, and no real project received anything.
+      KindMind AI is a hackathon demonstration and every project on this site is a sample.</p>
+    <div class="panel">
+      <table class="table">
+        <tbody>
+          <tr><td>Sample project</td><td class="num">{{ payment.project_title }}</td></tr>
+          <tr><td>Test amount</td><td class="num">${{ payment.amount_usd }} (USD)</td></tr>
+          <tr><td>Braintree status</td><td class="num">{{ payment.status }}</td></tr>
+          <tr><td>Sandbox transaction ID</td><td class="num">{{ payment.transaction_id }}</td></tr>
+          <tr><td>Environment</td><td class="num">Braintree Sandbox (test)</td></tr>
+        </tbody>
+      </table>
+      <p class="small muted">This page only shows payments that the server has verified with Braintree and recorded.
+        It is not a tax receipt.</p>
+    </div>
+    <p><a class="btn btn-primary" href="/assistant">Back to the assistant</a>
+      <a class="btn btn-outline" href="/causes">See sample projects</a></p>
+  </div>
+</section>
+{% endblock %}
