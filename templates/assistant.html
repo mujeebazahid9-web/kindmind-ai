@@ -41,7 +41,7 @@
       </form>
       <p class="small muted" id="status"></p>
     </div>
-    <p class="small muted">Status: the payment step is not connected yet, so a proposal here does not charge anything.</p>
+    <p class="small muted">Status: payments here are Braintree (a PayPal service) SANDBOX test payments only. No real money is ever charged, and the AI can only propose: you must approve each payment yourself.</p>
   </div>
 </section>
 
@@ -64,28 +64,102 @@
     log.scrollTop = log.scrollHeight;
   }
 
-  function showProposal(p) {
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) { n.className = cls; }
+    if (text) { n.textContent = text; }
+    return n;
+  }
+
+  var dropinLoaded = null;
+  function loadDropin() {
+    if (dropinLoaded) { return dropinLoaded; }
+    dropinLoaded = new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = "https://js.braintreegateway.com/web/dropin/1.43.0/js/dropin.min.js";
+      s.onload = resolve;
+      s.onerror = function () { dropinLoaded = null; reject(new Error("load")); };
+      document.head.appendChild(s);
+    });
+    return dropinLoaded;
+  }
+
+  function showProposal(p, paymentEnabled) {
     proposalBox.textContent = "";
     if (!p) { return; }
-    var box = document.createElement("div");
-    box.className = "proposal";
-    var h = document.createElement("h3");
-    h.textContent = "Sample donation proposal";
-    var line = document.createElement("p");
-    var strong = document.createElement("strong");
-    strong.textContent = p.project_title + ": $" + p.amount_usd + " (USD)";
-    line.appendChild(strong);
-    var why = document.createElement("p");
-    why.textContent = p.reason;
-    var btn = document.createElement("button");
-    btn.className = "btn btn-primary btn-disabled";
-    btn.disabled = true;
-    btn.textContent = "Approve and pay (sandbox): not connected yet";
-    var note = document.createElement("p");
-    note.className = "small muted";
-    note.textContent = "No payment has been made. This is a sample proposal for a sample project.";
-    box.appendChild(h); box.appendChild(line); box.appendChild(why); box.appendChild(btn); box.appendChild(note);
+    var box = el("div", "proposal");
+    box.appendChild(el("h3", "", "Sample donation proposal"));
+    var line = el("p");
+    line.appendChild(el("strong", "", p.project_title + ": $" + p.amount_usd + " (USD)"));
+    box.appendChild(line);
+    box.appendChild(el("p", "", p.reason));
+
+    if (!paymentEnabled || !p.token) {
+      var off = el("button", "btn btn-primary btn-disabled", "Approve and pay (sandbox): not connected");
+      off.disabled = true;
+      box.appendChild(off);
+      box.appendChild(el("p", "small muted", "No payment has been made. This is a sample proposal for a sample project."));
+      proposalBox.appendChild(box);
+      return;
+    }
+
+    var approve = el("button", "btn btn-primary", "Approve and pay $" + p.amount_usd + " (sandbox test)");
+    approve.type = "button";
+    var area = el("div");
+    var msg = el("p", "small", "");
+    box.appendChild(approve);
+    box.appendChild(area);
+    box.appendChild(msg);
+    box.appendChild(el("p", "small muted",
+      "You approve this proposal yourself. It is a Braintree (PayPal) SANDBOX test payment: no real money moves. " +
+      "Use the test card 4111 1111 1111 1111, any future expiry date and any 3-digit CVV."));
     proposalBox.appendChild(box);
+
+    approve.addEventListener("click", function () {
+      approve.disabled = true;
+      msg.textContent = "Loading the secure card form...";
+      Promise.all([loadDropin(), fetch("/api/payment/client-token").then(function (r) {
+        return r.json().then(function (d) { if (!r.ok) { throw new Error(d.error || "token"); } return d; });
+      })]).then(function (parts) {
+        var token = parts[1].client_token;
+        var holder = el("div");
+        holder.id = "dropin";
+        area.appendChild(holder);
+        return new Promise(function (resolve, reject) {
+          window.braintree.dropin.create({ authorization: token, container: holder }, function (err, instance) {
+            if (err) { reject(err); } else { resolve(instance); }
+          });
+        });
+      }).then(function (instance) {
+        msg.textContent = "";
+        approve.style.display = "none";
+        var pay = el("button", "btn btn-primary", "Pay $" + p.amount_usd + " (sandbox test)");
+        pay.type = "button";
+        area.appendChild(pay);
+        pay.addEventListener("click", function () {
+          pay.disabled = true;
+          msg.textContent = "Processing the sandbox test payment...";
+          instance.requestPaymentMethod(function (err, payload) {
+            if (err) { msg.textContent = "Please check the card details and try again."; pay.disabled = false; return; }
+            fetch("/api/payment/checkout", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ proposal_token: p.token, payment_nonce: payload.nonce })
+            }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+              .then(function (res) {
+                if (res.ok) { window.location.href = res.data.url; return; }
+                msg.textContent = res.data.error || "The payment could not be completed.";
+                pay.disabled = false;
+              })
+              .catch(function () { msg.textContent = "Could not reach the server. Nothing was charged."; pay.disabled = false; });
+          });
+        });
+      }).catch(function (e) {
+        msg.textContent = (e && e.message && e.message.length < 120 && e.message !== "load")
+          ? e.message : "The payment form could not be loaded. Nothing was charged.";
+        approve.disabled = false;
+      });
+    });
   }
 
   function ask(text) {
@@ -110,7 +184,7 @@
         }
         addMessage("assistant", res.data.reply);
         history.push({ role: "assistant", content: res.data.reply });
-        showProposal(res.data.proposal);
+        showProposal(res.data.proposal, res.data.payment_enabled);
       })
       .catch(function () {
         addMessage("error", "Could not reach the server. Please try again.");
