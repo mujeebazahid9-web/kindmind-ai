@@ -43,10 +43,9 @@
           <div class="progress-bar" style="width: {{ (project.amount_raised / project.goal * 100) | round(0) | int }}%"></div>
         </div>
         <p class="progress-text"><strong>${{ project.amount_raised }}</strong> raised of <strong>${{ project.goal }}</strong></p>
-        <p class="small muted">No donations have been recorded for this sample project.</p>
-        <button class="btn btn-primary btn-disabled" disabled>PayPal Sandbox donation: coming soon</button>
-        <p class="small muted">The PayPal Sandbox checkout is not connected yet. When it is, payments will be test payments only.</p>
-        <a class="btn btn-outline" href="/assistant">Ask the AI assistant</a>
+        <p class="small muted">No real donations exist for this sample project. The amount above is not changed by sandbox test payments.</p>
+        <p class="small muted">Want to try a sandbox test donation? Ask the AI assistant to prepare a proposal, then approve it yourself. It is a Braintree (PayPal) sandbox test: no real money moves.</p>
+        <a class="btn btn-primary" href="/assistant">Ask the AI assistant</a>
       </aside>
     </div>
   </div>
